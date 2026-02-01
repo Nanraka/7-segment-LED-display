@@ -14,7 +14,7 @@ For more details, see: > https://elchika.com/article/256d17d7-ee96-4fee-8e8a-b19
 <img width="50%" alt="final" src="https://github.com/user-attachments/assets/9cfaa1b0-216b-45c7-99f9-748ff2d10ad6" />
 
 
-SPRESENSE was used for control.　　
+SPRESENSE was used for control.  
 The seven-segment LEDs were controlled using a shift register with a dynamic (multiplexed) driving method.
 
 The PCB design data is available here: > https://github.com/Nanraka/7-segment-LED-display/tree/main/schematics
