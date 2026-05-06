@@ -3,7 +3,7 @@
 <eagle version="9.6.2">
 <drawing>
 <settings>
-<setting alwaysvectorfont="no"/>
+<setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="1" unitdist="mm" unit="mm" style="lines" multiple="1" display="no" altdistance="0.05" altunitdist="mm" altunit="mm"/>
@@ -22,7 +22,7 @@
 <layer number="12" name="Route12" color="20" fill="5" visible="no" active="no"/>
 <layer number="13" name="Route13" color="21" fill="5" visible="no" active="no"/>
 <layer number="14" name="Route14" color="22" fill="6" visible="no" active="no"/>
-<layer number="15" name="Route15" color="23" fill="6" visible="yes" active="yes"/>
+<layer number="15" name="Route15" color="23" fill="6" visible="no" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
 <layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
@@ -185,15 +185,9 @@
 </layers>
 <board>
 <plain>
-<wire x1="2" y1="0" x2="98" y2="0" width="0" layer="20"/>
-<wire x1="98" y1="0" x2="100" y2="2" width="0" layer="20" curve="90"/>
-<wire x1="100" y1="2" x2="100" y2="74" width="0" layer="20"/>
-<wire x1="100" y1="74" x2="98" y2="76" width="0" layer="20" curve="90"/>
-<wire x1="98" y1="76" x2="62.26" y2="76" width="0" layer="20"/>
-<wire x1="2" y1="0" x2="0" y2="2" width="0" layer="20" curve="-90"/>
-<wire x1="34" y1="76" x2="2" y2="76" width="0" layer="20"/>
-<wire x1="2" y1="76" x2="0" y2="74" width="0" layer="20" curve="90"/>
-<wire x1="0" y1="74" x2="0" y2="2" width="0" layer="20"/>
+<wire x1="0" y1="0" x2="100" y2="0" width="0" layer="20"/>
+<wire x1="100" y1="0" x2="100" y2="76" width="0" layer="20"/>
+<wire x1="34" y1="76" x2="0" y2="76" width="0" layer="20"/>
 <text x="6.4" y="68.46" size="1.27" layer="26" rot="MR0">VCC</text>
 <text x="6.4" y="71" size="1.27" layer="26" rot="MR0">TRCLK</text>
 <text x="6.4" y="63.38" size="1.27" layer="26" rot="MR0">TSER</text>
@@ -231,7 +225,24 @@ operate_7seg_vsr3
 <hole x="3" y="9.5" drill="3"/>
 <hole x="97" y="9.5" drill="3"/>
 <hole x="97" y="66.5" drill="3"/>
-<wire x1="62.26" y1="76" x2="34" y2="76" width="0" layer="20"/>
+<wire x1="34" y1="76" x2="34" y2="79" width="0.1524" layer="20"/>
+<wire x1="39" y1="76" x2="39" y2="79" width="0.1524" layer="20"/>
+<wire x1="57.26" y1="76" x2="57.26" y2="79" width="0.1524" layer="20"/>
+<wire x1="62.26" y1="76" x2="62.26" y2="79" width="0.1524" layer="20"/>
+<wire x1="57.26" y1="79" x2="39" y2="79" width="0" layer="20"/>
+<wire x1="34" y1="79" x2="0" y2="79" width="0" layer="20"/>
+<wire x1="100" y1="79" x2="62.26" y2="79" width="0" layer="20"/>
+<wire x1="0" y1="79" x2="0" y2="82" width="0.1524" layer="20"/>
+<wire x1="100" y1="79" x2="100" y2="82" width="0.1524" layer="20"/>
+<wire x1="100" y1="82" x2="0" y2="82" width="0" layer="20"/>
+<text x="102" y="76" size="1.778" layer="20">V-CUT</text>
+<text x="1.5" y="79.9" size="1.016" layer="25">Could you write production code here?</text>
+<wire x1="57.26" y1="76" x2="39" y2="76" width="0" layer="20"/>
+<wire x1="100" y1="76" x2="62.26" y2="76" width="0" layer="20"/>
+<wire x1="-3" y1="76" x2="0" y2="76" width="0.1524" layer="20" style="shortdash"/>
+<text x="28.5" y="79.9" size="1.016" layer="25">JLCJLCJLCJLC</text>
+<wire x1="0" y1="76" x2="106" y2="76" width="0.1524" layer="20" style="shortdash"/>
+<wire x1="0" y1="0" x2="0" y2="76" width="0" layer="20"/>
 </plain>
 <libraries>
 <library name="SL3264">
@@ -558,7 +569,7 @@ operate_7seg_vsr3
 <param name="TopRouterVariant" value="1"/>
 <param name="tpViaShape" value="round"/>
 <param name="PrefDir.1" value="|"/>
-<param name="PrefDir.2" value="0"/>
+<param name="PrefDir.2" value="-"/>
 <param name="PrefDir.3" value="0"/>
 <param name="PrefDir.4" value="0"/>
 <param name="PrefDir.5" value="0"/>
