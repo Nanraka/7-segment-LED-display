@@ -3,10 +3,10 @@
 #include <SPI.h>
 
 
-#define DATA_SIZE 2560
-#define ROW_SIZE     8  // 1列当たりの7セグメントLEDの数
+#define DATA_SIZE 2048
+#define BLOCK_SIZE   8 // 1列当たりの7セグメントLEDの数
 #define GROUP_SIZE   64 // 1セットあたりの7セグメントLEDの数
-#define GROUP_COUNT  2  // セット数
+#define GROUP_COUNT  5 // セット数
 #define LOOP_COUNT   8
 
 
@@ -20,26 +20,19 @@ const int TRAN_LATCH_PIN = 3;
 const int OE_PIN = 1;
 
 int tran_pos = 0;
+int data_offset = 0;
 
-uint8_t cathode_data = 0x80;
-
-「
-
+uint8_t cathode_data = 0x01;
 
 
 
 void sendToShiftRegister(int loop) {
-
-  // 最後のレジスタ分から送る
-  for (int group = GROUP_COUNT; group > 0; group--) {
-
-    // 列方向の遷移 下から上に上がっていく
-    for (int offset = 0; offset < ROW_SIZE; offset++) {
-
-      int index = group*GROUP_SIZE - offset - (loop * ROW_SIZE) - 1;
-      SPI.transfer(sendData[index]);
-    }
+  //列方向の遷移 下から上に上がっていく
+  for (int i= 0; i < 32; i++) {
+    SPI.transfer(sendData[i + data_offset]);
+    //Serial.println(sendData[i], BIN);
   }
+  data_offset += 32;
 }
 
 
@@ -71,7 +64,7 @@ void setup() {
     return;
   }
 
-  File file = SD.open("hi.txt");
+  File file = SD.open("output.txt");
   if (!file) {
     Serial.println("File open failed");
     return;
@@ -91,11 +84,14 @@ void setup() {
 
   packBitsToBytes();
 
+  for (int i= 0; i < 128; i++) {
+    Serial.println(sendData[i], BIN);
+  }
+
   // SPI初期化
   SPI.begin();
   SPI.beginTransaction(SPISettings(8000000, LSBFIRST, SPI_MODE0));
 
-  // ピン設定
   pinMode(DATA_LATCH_PIN, OUTPUT);
   pinMode(TRAN_LATCH_PIN, OUTPUT);
   pinMode(OE_PIN, OUTPUT);
@@ -124,13 +120,17 @@ void loop() {
     digitalWrite(OE_PIN, LOW);
 
     tran_pos += 1;
-    cathode_data = cathode_data >> 1;
+    cathode_data = cathode_data << 1;
+
+    //Serial.println(data,BIN);
 
     if (tran_pos >= 8){
       tran_pos = 0;
-      cathode_data = 0x80;
+      cathode_data = 0x01;
+      data_offset = 0;
     }
 
     delay(2);  // 出力更新周期
   }
+
 }

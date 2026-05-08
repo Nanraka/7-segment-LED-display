@@ -3,15 +3,15 @@ import numpy as np
 
 
 # === グローバル関数 ===
-input_image         = "input_img.jpg"           # 入力画像ファイル名
-output_image        = "output_img.jpg"          # 出力画像ファイル名
-serial_CSV_data     = "serial_data.csv"         # 出力CSVファイル名
-serial_TXT_data     = "serial_data.txt"         # 出力TXTファイル名
+input_image         = "input.jpg"               # 入力画像ファイル名
+output_image        = "output_target_heightx160_aki.jpg"   # 出力画像ファイル名
+serial_CSV_data         = "serial_data.csv"         # 出力CSVファイル名
+serial_TXT_data         = "serial_data.txt"         # 出力TXTファイル名
 confirm_serial_data = "confirm_serial_data.csv" # 確認用CSVファイル名
 
-# 変換後のサイズ
-target_height = 50
-target_width = 64
+# 変換後のサイズ（縦target_height × 横160）
+target_height = 64
+target_width = 96
 
 
 # switch
@@ -19,7 +19,7 @@ img_flag = 1  # 1: 画像からシリアルデータ, 0: CSVからシリアル�
 
 
 
-# === 画像をリサイズする関数 ===
+# === 画像を縦target_height × 横160にリサイズする関数 ===
 def img_formatter():
     # 画像を読み込み
     img = Image.open(input_image)
@@ -44,7 +44,7 @@ def img_2_serial():
     img = Image.open(output_image).convert("L")  # L = grayscale
 
     width, height = img.size
-    assert (height, width) == (target_height, target_width), "画像サイズがtarget_heightx160ではありません"
+    assert (height, width) == (target_height, target_width), "画像サイズがtarget_heightxtarget_widthではありません"
 
     # NumPy配列に変換
     img_array = np.array(img)
@@ -57,14 +57,14 @@ def img_2_serial():
 
     # 縦方向に読み出して1列のシリアルデータにする
     # （列→行の順で読み出し）
-    serial_matrix = binary.flatten(order="F").reshape(-1, 1)
+    serial_matrix = binary.flatten(order="C").reshape(-1, 1)
 
     # CSV，txtファイルに書き出し
     np.savetxt(serial_CSV_data, serial_matrix, fmt="%d", delimiter=",")
     np.savetxt(serial_TXT_data, serial_matrix, fmt="%d", delimiter=",")
 
     print(serial_matrix)
-    print(serial_matrix.shape) 
+    print(serial_matrix.shape)  # (6target_height0, 1)
 
 
 
@@ -76,12 +76,16 @@ def confirm_serialdata():
 
     # target_height行ごとに列へ変換
     assert len(data) % target_height == 0, "データ数がtarget_heightの倍数ではありません"
-    matrix = data.reshape(-1, target_height).T
+
+    matrix = data.reshape(-1, target_width)
+    # ↑
+    # reshape(-1, target_height) : target_height個ずつまとめる
+    # .T              : 転置して「target_height行 × 列数」にする
 
     # CSVに保存
     np.savetxt(confirm_serial_data, matrix, fmt="%d", delimiter=",")
 
-    print("確認用CSVを書き出しました:", confirm_serial_data)
+    print("CSVを書き出しました:", confirm_serial_data)
     print("出力サイズ:", matrix.shape)
 
 
@@ -92,13 +96,14 @@ def save_matrix_to_serial_csv():
     matrix = np.loadtxt(confirm_serial_data, delimiter=",",encoding="utf-8-sig")
 
     # 行 → 行の順で1列にまとめる
-    serial_data = matrix.flatten(order="F").reshape(-1, 1)
+    serial_data = matrix.flatten(order="C").reshape(-1, 1)
+    # order="F" : 列優先（左の列から順に）
 
     # CSVに保存
     np.savetxt(serial_CSV_data, serial_data, fmt="%d", delimiter=",")
     np.savetxt(serial_TXT_data, serial_data, fmt="%d", delimiter=",")
 
-    print("CSVを書き出しました:", serial_CSV_data)
+    print("1列シリアルCSVを書き出しました:", serial_CSV_data)
     print("出力サイズ:", serial_data.shape)
 
 
