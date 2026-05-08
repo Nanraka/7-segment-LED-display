@@ -2,49 +2,76 @@ import csv
 
 
 # === グローバル関数 ===
-data_size = 3200 # 画素数を指定
+data_size = 6144
+seg_num = 8
+segments_per_column = 16
+column = 16
 
 
+# === Read CSV ===
 
-# =========================
-# 1. CSV読み込み関数
-# =========================
-def load_1column_csv(path):
+def load_row_csv(path):
     data = []
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
         for row in reader:
-            if len(row) == 0:
-                continue
-            data.append(int(row[0]))
+            for cell in row:
+                data.append(int(cell))
     return data
 
 
-# =========================
-# 2. 64要素ブロックごとに並び替える関数
-# =========================
-def reorder_by_64_blocks(data):
-    BLOCK = 64
-    ORDER_64 = [
-        40,  0, 17, 16, 56, 41, 18,  1,
-        42,  2, 20, 19, 57, 43, 21,  3,
-        44,  4, 23, 22, 58, 45, 24,  5,
-        46,  6, 26, 25, 59, 47, 27,  7,
-        48,  8, 29, 28, 60, 49, 30,  9,
-        50, 10, 32, 31, 61, 51, 33, 11,
-        52, 12, 35, 34, 62, 53, 36, 13,
-        54, 14, 38, 37, 63, 55, 39, 15
-    ]
+# === 要素ブロックごとに並び替える関数 ===
+def reorder_blocks(data):
+    base_pattern = [16, 96, 49, 48, 0, 17, 50, 97]
 
-    assert len(data) % BLOCK == 0, "配列長は64の倍数である必要があります"
+    # 各要素のオフセット係数
+    offset_weights = [2, 2, 3, 3, 1, 2, 3, 2]
 
-    reordered = []
+    result = []
 
-    for base in range(0, len(data), BLOCK):
-        block = data[base:base + BLOCK]
-        reordered.extend(block[i] for i in ORDER_64)
+    for i in range(0,int(len(data)/(seg_num * segments_per_column))):
+        for j in range(0,segments_per_column):
+            for k in range(0,len(base_pattern)):
+                result.append(data[ i * (seg_num * segments_per_column) + base_pattern[k] + j * offset_weights[k] ])
+                #print(i * (seg_num * segments_per_column) + base_pattern[k] + j * offset_weights[k])
+    return result
 
-    return reordered
+
+def reorder_stage2(data):
+    segment_offset = 0
+    column_offset = 0
+    line_offset = 0
+
+    upp_flag = 0
+    line_flag = 0
+
+    upp_element = 1024 - 8
+    low_element = 1024 + 1024 - 8
+
+    result = []
+
+    for i in range(segments_per_column * column * seg_num):
+        if upp_flag == 1:
+            result.append(data[upp_element + segment_offset - column_offset * 8 - line_offset * 128])
+        else:
+            result.append(data[low_element + segment_offset - column_offset * 8 - line_offset * 128])
+
+        segment_offset += 1
+
+        if segment_offset >= seg_num:
+            segment_offset = 0
+            column_offset += 1
+
+        if column_offset >= segments_per_column:
+            column_offset = 0
+            line_flag += 1
+            upp_flag = not upp_flag
+        
+        if line_flag == 2:
+            line_flag = 0
+            line_offset += 1
+            
+    return result
 
 
 # =========================
@@ -58,39 +85,32 @@ OUTPUT_CSV_PATH = "output.csv"
 # =========================
 # 4. データ読み込み
 # =========================
-MASK_DATA = load_1column_csv(MASK_CSV_PATH)
-input_data = load_1column_csv(INPUT_CSV_PATH)
+MASK_DATA = load_row_csv(MASK_CSV_PATH)
+input_data = load_row_csv(INPUT_CSV_PATH)
 
 
 # =========================
 # 5. サイズチェック
 # =========================
-assert len(MASK_DATA) == data_size, f"MASK_DATAは{data_size}要素である必要があります"
-assert len(input_data) == data_size, f"input_dataは{data_size}要素である必要があります"
-
-
-# =========================
-# 6. AND演算
-# =========================
-and_result = [
-    input_data[i] & MASK_DATA[i]
-    for i in range(data_size)
-]
+assert len(MASK_DATA) == data_size, "MASK_DATAはdata_size要素である必要があります"
+assert len(input_data) == data_size, "input_dataはdata_size要素である必要があります"
 
 # =========================
 # 7. MASK_DATAが1の要素のみ抽出
 # =========================
-extracted_data = [
-    and_result[i]
-    for i in range(data_size)
-    if MASK_DATA[i] == 1
-]
+extracted_data = []
+
+for i in range(data_size):
+    if MASK_DATA[i] == 1:
+        extracted_data.append(input_data[i])
 
 
 # =========================
 # 8. 並べ替え
 # =========================
-result = reorder_by_64_blocks(extracted_data)
+reorder_blocks_data = reorder_blocks(extracted_data)
+result = reorder_stage2(reorder_blocks_data)
+print(result)
 
 
 # =========================
